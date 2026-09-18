@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BuildTrack Pro | Multi-Site & Multi-Engineer Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=15">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- SINGLE FIXED BACKGROUND IMAGE -->
+  <div class="bg-fixed-container" id="bgContainer" style="background-image: url('b5cadbbf-51f8-4bbf-8957-e85e531bb420.jpg');">
+    <div class="bg-overlay"></div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 1. COMPANY INTERNAL GATEWAY (LOGIN VIEW)                       -->
+  <!-- ============================================================== -->
+  <div id="loginView" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-badge">BuildTrack Pro</div>
+        <h2>Company Gateway Protocol</h2>
+        <p id="authSubtitle">Select role segment and enter your registered company credentials.</p>
+      </div>
+
+      <!-- ROLE SELECTOR (OWNER / SITE ENGINEER) -->
+      <div class="role-selector" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+        <button type="button" class="role-btn active" data-role="owner">
+          <span class="role-title">Company Owner</span>
+          <span class="role-desc">Full Multi-Site Master Access</span>
+        </button>
+        <button type="button" class="role-btn" data-role="builder">
+          <span class="role-title">Site Engineer</span>
+          <span class="role-desc">Assigned Site Logging</span>
+        </button>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginEmail" id="loginEmailLabel">Company Email ID <span class="required">*</span></label>
+          <input type="email" id="loginEmail" required placeholder="Enter registered email ID" value="" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="loginPassword">Access Password <span class="required">*</span></label>
+            <button type="button" class="btn-link" id="toggleForgotBtn" style="font-size:0.78rem;">Forgot / Change Password?</button>
+          </div>
+          <div class="password-input-wrap">
+            <input type="password" id="loginPassword" required placeholder="Enter access password" value="" autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="toggleShowPwdBtn">Show</button>
+          </div>
+        </div>
+
+        <div id="loginAlert" class="alert-box error hidden"></div>
+
+        <button type="submit" class="btn btn-primary btn-large btn-block" id="loginSubmitBtn">
+          Sign In to Portal
+        </button>
+      </form>
+
+      <!-- DIRECT PASSWORD RESET / CHANGE FORM -->
+      <form id="forgotForm" class="auth-form hidden">
+        <div class="form-group">
+          <label for="forgotEmail">Registered Email ID <span class="required">*</span></label>
+          <input type="email" id="forgotEmail" required placeholder="e.g. alex@building.com or sam@building.com" value="">
+        </div>
+        <div class="form-group">
+          <label for="forgotNewPassword">New Password <span class="required">*</span></label>
+          <input type="password" id="forgotNewPassword" required placeholder="Enter new password">
+        </div>
+        <div class="form-group">
+          <label for="forgotConfirmPassword">Confirm New Password <span class="required">*</span></label>
+          <input type="password" id="forgotConfirmPassword" required placeholder="Confirm new password">
+        </div>
+        <div id="forgotAlert" class="alert-box hidden"></div>
+        <button type="submit" class="btn btn-primary btn-large btn-block" id="forgotSubmitBtn">
+          Update & Save Password
+        </button>
+        <div style="text-align:center; margin-top:10px;">
+          <button type="button" class="btn-link" id="backToLoginBtn">&larr; Back to Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- 2. MAIN APPLICATION CONTAINER                                  -->
+  <!-- ============================================================== -->
+  <div id="appContainer" class="app-container hidden">
+
+    <!-- GLOBAL TOP NAVBAR -->
+    <header class="top-nav">
+      <div class="brand-section">
+        <div>
+          <h1 class="brand-title">BuildTrack Pro</h1>
+          <p class="brand-subtitle" id="portalSubTitle">Multi-Site & Multi-Engineer Intelligence Protocol</p>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <div class="user-role-badge" id="userRoleBadge">
+          <span class="pulse-dot"></span>
+          <span id="activeRoleText">Company Owner</span>
+        </div>
+
+        <button type="button" class="btn btn-outline btn-sm" id="globalCameraBtn">
+          Site Camera
+        </button>
+
+        <button type="button" class="btn btn-outline btn-sm" id="openLiveClientBtn">
+          Open Client Live Report
+        </button>
+
+        <button type="button" class="btn btn-outline btn-sm" id="shareClientLinkBtn">
+          Copy Client Link
+        </button>
+
+        <a href="/api/export" class="btn btn-outline btn-sm" id="globalExcelBtn">
+          Download Excel (.xlsx)
+        </a>
+        <button type="button" class="btn btn-danger-outline btn-sm" id="logoutBtn">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- ACTIVE SITE ENGINEER & CONSTRUCTION SITE SELECTOR BAR -->
+    <div class="site-selector-wrapper" id="globalSiteSelectorWrapper">
+      <div class="site-selector-label">
+        <span id="siteSelectorTitleText">Active Site Engineer & Client Project:</span>
+      </div>
+      <select id="globalSiteSelect" class="site-dropdown"></select>
+      <div class="site-pill-bar" id="sitePillBar"></div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- PORTAL 1: OWNER MASTER PROTOCOL VIEW                           -->
+    <!-- ============================================================== -->
+    <section id="ownerPortal" class="portal-section">
+      <!-- OWNER NAVIGATION TABS -->
+      <nav class="view-tabs" id="ownerViewTabs">
+        <button class="tab-btn active" data-tab="owner-dash-tab">
+          Dashboard & Analytics
+        </button>
+        <button class="tab-btn" data-tab="owner-form-tab">
+          Daily Site Log Entry
+        </button>
+        <button class="tab-btn" data-tab="owner-table-tab">
+          Master Excel Database
+          <span class="badge" id="ownerRecordCountBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="owner-sites-tab">
+          Projects & Engineers
+          <span class="badge" id="ownerSitesCountBadge">3</span>
+        </button>
+        <button class="tab-btn" data-tab="owner-team-tab">
+          Authorized Accounts & Passwords
+        </button>
+      </nav>
+
+      <!-- TAB 1: OWNER DASHBOARD -->
+      <div id="owner-dash-tab" class="tab-content active">
+        <div class="financial-ribbon">
+          <div class="financial-card highlight-kpi">
+            <span class="kpi-label">Project Contract Value</span>
+            <h3 class="kpi-value" id="ownerTotalProjectAmount">Rs. 15,00,000</h3>
+            <span class="kpi-sub" id="ownerContractSubtitle">Agreed Contract</span>
+          </div>
+          <div class="financial-card advance-kpi">
+            <span class="kpi-label">Client Advance Received</span>
+            <h3 class="kpi-value" id="ownerAdvanceReceived">Rs. 6,00,000</h3>
+            <span class="kpi-sub">Deposited to Company</span>
+          </div>
+          <div class="financial-card spent-kpi">
+            <span class="kpi-label">Total Site Spend</span>
+            <h3 class="kpi-value" id="ownerTotalExpense">Rs. 0</h3>
+            <span class="kpi-sub" id="ownerEntriesCount">0 Logs Recorded</span>
+          </div>
+          <div class="financial-card balance-kpi">
+            <span class="kpi-label">Remaining Advance Balance</span>
+            <h3 class="kpi-value" id="ownerRemainingAdvance">Rs. 0</h3>
+            <span class="kpi-sub" id="ownerRemainingProjectBalance">Overall Contract Balance: Rs. 0</span>
+          </div>
+        </div>
+
+        <div class="budget-bar-container">
+          <div class="budget-bar-header">
+            <span><strong>Client Advance Utilization:</strong> <span id="ownerAdvanceUsageText">0% of advance used</span></span>
+            <span><strong>Overall Contract Progress:</strong> <span id="ownerProjectUsageText">0% of contract</span></span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="ownerAdvanceProgressBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Total Material Spend</span>
+              <h3 class="kpi-value" id="ownerMaterialCost">Rs. 0</h3>
+              <span class="kpi-sub" id="ownerMaterialPercent">0% of spend</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Total Labour Wages</span>
+              <h3 class="kpi-value" id="ownerLabourCost">Rs. 0</h3>
+              <span class="kpi-sub" id="ownerLabourPercent">0% of spend</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Total Manpower Deployed</span>
+              <h3 class="kpi-value" id="ownerTotalWorkers">0</h3>
+              <span class="kpi-sub">Worker Days on Site</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Active Trade Categories</span>
+              <h3 class="kpi-value" id="ownerCategoriesCount">0</h3>
+              <span class="kpi-sub">Work Categories</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 STREAMLINED CHARTS -->
+        <div class="charts-grid">
+          <div class="chart-card full-width-card">
+            <div class="chart-header">
+              <h3>1. Total Material Cost by Material Name</h3>
+              <span class="chart-badge">Material Spend Curve</span>
+            </div>
+            <div class="chart-container tall-container">
+              <canvas id="ownerMaterialChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>2. Total Expense by Work Category</h3>
+              <span class="chart-badge">Stacked Cost</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="ownerCategoryChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>3. Total Labour Wages by Work Type</h3>
+              <span class="chart-badge">Wages Breakdown</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="ownerLabourChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>4. Total Manpower Deployed by Work Type</h3>
+              <span class="chart-badge">Worker Days</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="ownerWorkersChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card full-width-card">
+            <div class="chart-header">
+              <h3>5. Daily Site Expense Timeline</h3>
+              <span class="chart-badge">Daily Cashflow Trend</span>
+            </div>
+            <div class="chart-container tall-container">
+              <canvas id="ownerTimelineChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="client-feed-card">
+          <div class="feed-header">
+            <h3>Verified Site Work and Material Milestone Feed</h3>
+            <p>Chronological updates of procurement and site execution with verified photo logs.</p>
+          </div>
+          <div class="feed-list" id="ownerFeedList"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: OWNER SITE ENTRY FORM -->
+      <div id="owner-form-tab" class="tab-content">
+        <div class="form-layout">
+          <div class="form-card main-form">
+            <div class="card-header">
+              <h2>New Site Expense and Labour Entry</h2>
+              <p class="card-desc">Submissions append directly into construction_expenses.xlsx.</p>
+            </div>
+            <form id="ownerExpenseForm" class="site-form">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="ownerFormSiteSelect">Target Construction Site <span class="required">*</span></label>
+                  <select id="ownerFormSiteSelect" class="site-dropdown" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="ownerExpId">Expense ID <span class="required">*</span> <small style="color:#64748b; font-weight:400;">(Auto-generated per site, editable)</small></label>
+                  <input type="text" id="ownerExpId" name="Expense ID" required placeholder="EXP-001" class="mono-input">
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="ownerEntryDate">Date of Execution <span class="required">*</span></label>
+                  <input type="date" id="ownerEntryDate" name="Date" required>
+                </div>
+              </div>
+
+              <div class="form-sub-section">
+                <div class="sub-section-title">Material Procurement Details</div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ownerMatName">Material Name</label>
+                    <input type="text" id="ownerMatName" name="Material Name" placeholder="e.g. Portland Cement, TMT Steel, Sand" list="materialSuggestions">
+                  </div>
+                  <div class="form-row-sub">
+                    <div class="form-group">
+                      <label for="ownerQty">Quantity</label>
+                      <input type="text" inputmode="decimal" id="ownerQty" name="Quantity" placeholder="e.g. 50">
+                    </div>
+                    <div class="form-group">
+                      <label for="ownerUnit">Unit <small style="color:var(--text-muted);">(Type or choose)</small></label>
+                      <input type="text" id="ownerUnit" name="Unit" placeholder="e.g. Bags, Tons, Kg, Sq.Ft..." list="unitSuggestions">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ownerUnitRate">Rate per Unit (INR) <small style="color:var(--text-muted);">(Auto-calc)</small></label>
+                    <input type="text" inputmode="decimal" id="ownerUnitRate" placeholder="e.g. 390" class="cost-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="ownerMatCost">Total Material Cost (INR) <span class="required">*</span></label>
+                    <input type="text" inputmode="decimal" id="ownerMatCost" name="Material Cost (INR)" placeholder="0.00" class="cost-input bold-cell">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-sub-section">
+                <div class="sub-section-title">Labour & Work Details</div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ownerWorkType">Labour / Work Type <span class="required">*</span> <small style="color:var(--text-muted);">(Type or choose)</small></label>
+                    <input type="text" id="ownerWorkType" name="Labour/Work Type" required placeholder="Choose or type..." list="workTypeSuggestions">
+                  </div>
+                  <div class="form-group">
+                    <label for="ownerWorkers">Number of Workers</label>
+                    <input type="text" inputmode="numeric" id="ownerWorkers" name="Number of Workers" placeholder="e.g. 6">
+                  </div>
+                </div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ownerWage">Daily Wage per Worker (INR) <small style="color:var(--text-muted);">(Auto-calc)</small></label>
+                    <input type="text" inputmode="decimal" id="ownerWage" placeholder="e.g. 800" class="cost-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="ownerLabCost">Total Labour Cost (INR) <span class="required">*</span></label>
+                    <input type="text" inputmode="decimal" id="ownerLabCost" name="Labour Cost (INR)" placeholder="0.00" class="cost-input bold-cell">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="ownerDesc">Brief Description (Client Work Update) <span class="required">*</span></label>
+                <textarea id="ownerDesc" name="Brief Description" rows="3" required placeholder="Describe work completed on site."></textarea>
+              </div>
+
+              <!-- PHOTO ATTACHMENT -->
+              <div class="form-photo-section">
+                <div class="photo-attach-header">
+                  <label>Site Execution & Material Photo Proof</label>
+                  <div class="photo-actions-row">
+                    <button type="button" class="btn-camera-trigger" id="ownerOpenCamBtn">
+                      Take Live Photo
+                    </button>
+                    <label class="btn-file-trigger">
+                      Upload Image
+                      <input type="file" id="ownerFileInput" accept="image/*" style="display:none;">
+                    </label>
+                  </div>
+                </div>
+                <div class="attached-photo-card hidden" id="ownerAttachedPhotoCard">
+                  <div class="attached-photo-info">
+                    <img src="" id="ownerAttachedPhotoThumb" class="attached-photo-thumb" alt="Site Photo" style="cursor:pointer;" title="Click to view full photo">
+                    <div class="attached-photo-details">
+                      <strong id="ownerAttachedPhotoTitle">Site Photo Attached</strong>
+                      <span style="color:#2563eb; cursor:pointer;" id="ownerPreviewLargeText">🔍 Tap to Preview Fullscreen</span>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn-xs" style="background:#2563eb; color:#fff; border:none;" id="ownerInspectPhotoBtn">View Large</button>
+                    <button type="button" class="btn-remove-photo" id="ownerRemovePhotoBtn">Remove</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn btn-primary btn-large" id="ownerSubmitBtn">
+                  Save & Add to Excel
+                </button>
+                <button type="reset" class="btn btn-ghost">Clear Form</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="form-sidebar">
+            <div class="preview-card">
+              <div class="preview-header">
+                <h3>Live Expense Preview</h3>
+                <span class="pill-tag">Real-Time</span>
+              </div>
+              <div class="calc-breakdown">
+                <div class="calc-row">
+                  <span>Material Cost:</span>
+                  <span class="calc-val" id="ownerPreviewMatCost">Rs. 0.00</span>
+                </div>
+                <div class="calc-row">
+                  <span>Labour Cost:</span>
+                  <span class="calc-val" id="ownerPreviewLabCost">Rs. 0.00</span>
+                </div>
+                <div class="calc-divider"></div>
+                <div class="calc-row total-row">
+                  <span>Total Expense:</span>
+                  <span class="calc-val total-val" id="ownerPreviewTotalCost">Rs. 0.00</span>
+                </div>
+              </div>
+
+              <div class="budget-settings-box">
+                <div class="budget-settings-header">
+                  <h4>Active Project Budget Overview</h4>
+                  <button type="button" class="btn-xs" id="editBudgetBtn" title="Add or Edit Client Payments and Budget">Edit / Payments</button>
+                </div>
+                <div class="budget-stat-row">
+                  <span>Total Contract:</span>
+                  <strong id="sideTotalProject">Rs. 15,00,000</strong>
+                </div>
+                <div class="budget-stat-row">
+                  <span>Advance Received:</span>
+                  <strong id="sideAdvanceReceived">Rs. 6,00,000</strong>
+                </div>
+                <div id="sidePaymentsModeBreakdown" style="font-size:0.75rem; color:var(--text-muted); padding:3px 0 6px 0; display:flex; gap:6px; flex-wrap:wrap;"></div>
+                <div class="budget-stat-row">
+                  <span>Total Spent:</span>
+                  <strong id="sideTotalSpent" style="color: var(--danger);">Rs. 0</strong>
+                </div>
+                <div class="budget-stat-row total-row">
+                  <span>Remaining Advance:</span>
+                  <strong id="sideRemainingAdvance" style="color: var(--success);">Rs. 0</strong>
+                </div>
+              </div>
+
+              <div id="ownerFormAlert" class="alert-box hidden"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MASTER EXCEL DATABASE TABLE -->
+      <div id="owner-table-tab" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title-area">
+              <h2>Master Excel Database</h2>
+              <p>Synchronized live with construction_expenses.xlsx.</p>
+            </div>
+            <div class="table-actions">
+              <div class="search-box">
+                <input type="text" id="ownerTableSearch" placeholder="Search materials, site, engineer, ID...">
+              </div>
+              <a href="/api/export" class="btn btn-primary">
+                Download Excel (.xlsx)
+              </a>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="excel-table" id="ownerRecordsTable">
+              <thead>
+                <tr>
+                  <th>Expense ID</th>
+                  <th>Site Code</th>
+                  <th>Site Name</th>
+                  <th>Date</th>
+                  <th>Material Name</th>
+                  <th>Quantity</th>
+                  <th>Unit</th>
+                  <th>Material Cost (INR)</th>
+                  <th>Labour/Work Type</th>
+                  <th>Workers</th>
+                  <th>Labour Cost (INR)</th>
+                  <th>Payment Mode</th>
+                  <th>Brief Description</th>
+                  <th>Total Expense (INR)</th>
+                  <th>Site Photo</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="ownerTableBody"></tbody>
+              <tfoot id="ownerTableFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MULTI-PROJECT & SITE ENGINEERS MANAGEMENT -->
+      <div id="owner-sites-tab" class="tab-content">
+        <div class="form-layout">
+          <div class="form-card main-form">
+            <div class="card-header">
+              <h2>Sanction New Construction Project & Assign Engineer</h2>
+              <p class="card-desc">Sanction a new site, assign an existing or new Site Engineer, and generate Client portal link.</p>
+            </div>
+            <form id="createSiteForm" class="site-form">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newSiteName">Construction Project / Site Name <span class="required">*</span></label>
+                  <input type="text" id="newSiteName" required placeholder="e.g. Royal Palms Luxury Villas">
+                </div>
+                <div class="form-group">
+                  <label for="newSiteId">Site Code / ID</label>
+                  <input type="text" id="newSiteId" placeholder="e.g. SITE-104 (Auto-generated if empty)" class="mono-input">
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newSiteLocation">Site Address / Location</label>
+                  <input type="text" id="newSiteLocation" placeholder="e.g. Sector 18, Ring Road Highway">
+                </div>
+                <div class="form-group">
+                  <label for="newSiteClientName">Client Name <span class="required">*</span></label>
+                  <input type="text" id="newSiteClientName" required placeholder="e.g. Mr. Rajesh Khanna & Family">
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newSiteClientEmail">Client Email ID</label>
+                  <input type="email" id="newSiteClientEmail" placeholder="e.g. rajesh@client.com">
+                </div>
+                <div class="form-group">
+                  <label for="newSiteTotalAmount">Total Project Contract Value (INR) <span class="required">*</span></label>
+                  <input type="text" inputmode="decimal" id="newSiteTotalAmount" required placeholder="e.g. 2500000" class="cost-input">
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newSiteAdvanceReceived">Initial Advance Received (INR) <span class="required">*</span></label>
+                  <input type="text" inputmode="decimal" id="newSiteAdvanceReceived" required placeholder="e.g. 1000000" class="cost-input">
+                </div>
+                <div class="form-group">
+                  <label for="assignEngineerChoice">Assigned Site Engineer <span class="required">*</span></label>
+                  <select id="assignEngineerChoice" required></select>
+                </div>
+              </div>
+
+              <!-- OPTIONAL: CREATE NEW ENGINEER EMAIL ON THE FLY -->
+              <div id="newEngineerFields" class="form-sub-section hidden">
+                <div class="sub-section-title">New Site Engineer Credentials</div>
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="newEngName">Engineer Full Name <span class="required">*</span></label>
+                    <input type="text" id="newEngName" placeholder="e.g. Guna / Stephen">
+                  </div>
+                  <div class="form-group">
+                    <label for="newEngEmail">Engineer Company Email ID <span class="required">*</span></label>
+                    <input type="email" id="newEngEmail" placeholder="e.g. guna@building.com">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="newEngPassword">Engineer Initial Login Password <span class="required">*</span></label>
+                  <input type="password" id="newEngPassword" placeholder="e.g. 123" value="123">
+                </div>
+              </div>
+
+              <div id="createSiteAlert" class="alert-box hidden"></div>
+              <button type="submit" class="btn btn-primary btn-large" id="createSiteBtn">
+                Sanction & Launch Construction Project
+              </button>
+            </form>
+          </div>
+
+          <div class="form-sidebar" style="width:100%;">
+            <div class="table-card" style="padding: 20px;">
+              <div class="card-header" style="padding-bottom:10px; margin-bottom:14px;">
+                <h3 style="font-size: 1.1rem;">All Construction Projects & Engineer Assignments</h3>
+                <p style="font-size:0.82rem; color:var(--text-muted);">
+                  Click any project to switch Owner view or copy direct client links.
+                </p>
+              </div>
+              <div class="sites-grid" id="allSitesGrid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: TEAM MANAGEMENT & PASSWORDS -->
+      <div id="owner-team-tab" class="tab-content">
+        <div class="form-layout">
+          <div class="form-card main-form">
+            <div class="card-header">
+              <h2>Register New Company Member</h2>
+              <p class="card-desc">Authorize company owners and site engineers with permanent login access.</p>
+            </div>
+            <form id="addTeamMemberForm" class="site-form">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newMemberName">Full Name <span class="required">*</span></label>
+                  <input type="text" id="newMemberName" required placeholder="e.g. Guna / Stephen">
+                </div>
+                <div class="form-group">
+                  <label for="newMemberEmail">Company Email ID <span class="required">*</span></label>
+                  <input type="email" id="newMemberEmail" required placeholder="e.g. guna@building.com">
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="newMemberRole">Assigned Role <span class="required">*</span></label>
+                  <select id="newMemberRole" required>
+                    <option value="builder">Site Engineer</option>
+                    <option value="owner">Company Owner</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="newMemberPassword">Initial Password <span class="required">*</span></label>
+                  <input type="password" id="newMemberPassword" required placeholder="e.g. 123" value="123">
+                </div>
+              </div>
+              <div id="teamFormAlert" class="alert-box hidden"></div>
+              <button type="submit" class="btn btn-primary" id="addTeamMemberBtn">Authorize & Register User</button>
+            </form>
+          </div>
+
+          <div class="form-sidebar" style="width:100%;">
+            <div class="table-card" style="padding: 20px;">
+              <div class="card-header" style="padding-bottom:10px; margin-bottom:14px;">
+                <h3 style="font-size: 1.05rem;">Authorized Team Directory & Password Management</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted);">
+                  Manage permanent login access and update passwords for company owners and site engineers.
+                </p>
+              </div>
+              <div id="activeTeamList" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================== -->
+    <!-- PORTAL 2: SITE ENGINEER                                        -->
+    <!-- ============================================================== -->
+    <section id="builderPortal" class="portal-section hidden">
+      <div class="form-layout">
+        <div class="form-card main-form">
+          <div class="card-header">
+            <h2>Site Daily Entry Form</h2>
+            <p class="card-desc">Enter daily materials procurement and labour logs. Saves directly into Excel.</p>
+          </div>
+
+          <form id="builderExpenseForm" class="site-form">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="builderFormSiteSelect">Target Construction Site <span class="required">*</span></label>
+                <select id="builderFormSiteSelect" class="site-dropdown" required></select>
+              </div>
+              <div class="form-group">
+                <label for="builderExpId">Expense ID <span class="required">*</span> <small style="color:#64748b; font-weight:400;">(Auto-generated per site, editable)</small></label>
+                <input type="text" id="builderExpId" name="Expense ID" required placeholder="EXP-001" class="mono-input">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="builderEntryDate">Date of Execution <span class="required">*</span></label>
+                <input type="date" id="builderEntryDate" name="Date" required>
+              </div>
+            </div>
+
+            <div class="form-sub-section">
+              <div class="sub-section-title">Material Procurement</div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="builderMatName">Material Name</label>
+                  <input type="text" id="builderMatName" name="Material Name" placeholder="e.g. Portland Cement, TMT Steel, Sand" list="materialSuggestions">
+                </div>
+                <div class="form-row-sub">
+                  <div class="form-group">
+                    <label for="builderQty">Quantity</label>
+                    <input type="text" inputmode="decimal" id="builderQty" name="Quantity" placeholder="e.g. 50">
+                  </div>
+                  <div class="form-group">
+                    <label for="builderUnit">Unit <small style="color:var(--text-muted);">(Type or choose)</small></label>
+                    <input type="text" id="builderUnit" name="Unit" placeholder="e.g. Bags, Tons, Kg, Sq.Ft..." list="unitSuggestions">
+                  </div>
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="builderUnitRate">Rate per Unit (INR) <small style="color:var(--text-muted);">(Auto-calc)</small></label>
+                  <input type="text" inputmode="decimal" id="builderUnitRate" placeholder="e.g. 390" class="cost-input">
+                </div>
+                <div class="form-group">
+                  <label for="builderMatCost">Total Material Cost (INR) <span class="required">*</span></label>
+                  <input type="text" inputmode="decimal" id="builderMatCost" name="Material Cost (INR)" placeholder="0.00" class="cost-input bold-cell">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-sub-section">
+              <div class="sub-section-title">Labour Manpower & Wages</div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="builderWorkType">Labour / Work Type <span class="required">*</span> <small style="color:var(--text-muted);">(Type or choose)</small></label>
+                  <input type="text" id="builderWorkType" name="Labour/Work Type" required placeholder="Choose or type..." list="workTypeSuggestions">
+                </div>
+                <div class="form-group">
+                  <label for="builderWorkers">Number of Workers</label>
+                  <input type="text" inputmode="numeric" id="builderWorkers" name="Number of Workers" placeholder="e.g. 6">
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="builderWage">Daily Wage per Worker (INR) <small style="color:var(--text-muted);">(Auto-calc)</small></label>
+                  <input type="text" inputmode="decimal" id="builderWage" placeholder="e.g. 800" class="cost-input">
+                </div>
+                <div class="form-group">
+                  <label for="builderLabCost">Total Labour Cost (INR) <span class="required">*</span></label>
+                  <input type="text" inputmode="decimal" id="builderLabCost" name="Labour Cost (INR)" placeholder="0.00" class="cost-input bold-cell">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="builderDesc">Brief Description of Work Completed <span class="required">*</span></label>
+              <textarea id="builderDesc" name="Brief Description" rows="3" required placeholder="Describe daily construction execution on site."></textarea>
+            </div>
+
+            <!-- PHOTO ATTACHMENT SECTION (BUILDER) -->
+            <div class="form-photo-section">
+              <div class="photo-attach-header">
+                <label>Site Execution & Material Photo Proof</label>
+                <div class="photo-actions-row">
+                  <button type="button" class="btn-camera-trigger" id="builderOpenCamBtn">
+                    Take Live Photo
+                  </button>
+                  <label class="btn-file-trigger">
+                    Upload Image
+                    <input type="file" id="builderFileInput" accept="image/*" style="display:none;">
+                  </label>
+                </div>
+              </div>
+              <div class="attached-photo-card hidden" id="builderAttachedPhotoCard">
+                <div class="attached-photo-info">
+                  <img src="" id="builderAttachedPhotoThumb" class="attached-photo-thumb" alt="Site Photo" style="cursor:pointer;" title="Click to view full photo">
+                  <div class="attached-photo-details">
+                    <strong id="builderAttachedPhotoTitle">Site Photo Attached</strong>
+                    <span style="color:#2563eb; cursor:pointer;" id="builderPreviewLargeText">🔍 Tap to Preview Fullscreen</span>
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <button type="button" class="btn-xs" style="background:#2563eb; color:#fff; border:none;" id="builderInspectPhotoBtn">View Large</button>
+                  <button type="button" class="btn-remove-photo" id="builderRemovePhotoBtn">Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <button type="submit" class="btn btn-primary btn-large" id="builderSubmitBtn">
+                Save & Add to Excel
+              </button>
+              <button type="reset" class="btn btn-ghost">Clear Form</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="form-sidebar">
+          <div class="preview-card">
+            <div class="preview-header">
+              <h3>Live Item Calculation</h3>
+              <span class="pill-tag">Auto Calc</span>
+            </div>
+            <div class="calc-breakdown">
+              <div class="calc-row">
+                <span>Material Cost:</span>
+                <span class="calc-val" id="builderPreviewMatCost">Rs. 0.00</span>
+              </div>
+              <div class="calc-row">
+                <span>Labour Cost:</span>
+                <span class="calc-val" id="builderPreviewLabCost">Rs. 0.00</span>
+              </div>
+              <div class="calc-divider"></div>
+              <div class="calc-row total-row">
+                <span>Current Total Expense:</span>
+                <span class="calc-val total-val" id="builderPreviewTotalCost">Rs. 0.00</span>
+              </div>
+            </div>
+
+            <div class="site-status-box">
+              <h4>Site Logging Status</h4>
+              <p style="font-size:0.84rem; color:var(--text-secondary); margin-top:4px;">
+                Entries submitted here are synced instantly to the master Excel file.
+              </p>
+            </div>
+
+            <div id="builderFormAlert" class="alert-box hidden"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT SITE SUBMISSIONS TABLE FOR BUILDER -->
+      <div class="table-card" style="margin-top: 24px;">
+        <div class="table-toolbar">
+          <div class="table-title-area">
+            <h2>Recent Site Log Submissions</h2>
+            <p>Your logged site entries recorded in Excel.</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="excel-table">
+            <thead>
+              <tr>
+                <th>Expense ID</th>
+                <th>Site Code</th>
+                <th>Date</th>
+                <th>Material Name</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Material Cost</th>
+                <th>Work Category</th>
+                <th>Workers</th>
+                <th>Labour Cost</th>
+                <th>Payment Mode</th>
+                <th>Work Description</th>
+                <th>Total Cost</th>
+                <th>Site Photo</th>
+              </tr>
+            </thead>
+            <tbody id="builderRecentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>BuildTrack Pro &copy; 2026 - Multi-Site & Multi-Engineer Construction Intelligence Protocol</p>
+    </footer>
+
+    <!-- STICKY MOBILE BOTTOM NAVIGATION BAR (INSIDE APP CONTAINER) -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+      <button type="button" class="mobile-nav-btn active" data-target="dash">
+        <span class="mobile-nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg>
+        </span>
+        <span>Dashboard</span>
+      </button>
+      <button type="button" class="mobile-nav-btn" data-target="form">
+        <span class="mobile-nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+        <span>Daily Log</span>
+      </button>
+      <button type="button" class="mobile-fab-camera" id="mobileFabCameraBtn" title="Take Site Photo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <button type="button" class="mobile-nav-btn" data-target="table">
+        <span class="mobile-nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </span>
+        <span>Database</span>
+      </button>
+      <button type="button" class="mobile-nav-btn" data-target="sites">
+        <span class="mobile-nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+        </span>
+        <span>Projects</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ACTIVE PROJECT BUDGET & CLIENT PAYMENTS MODAL -->
+  <div id="budgetPaymentsModal" class="modal-overlay hidden">
+    <div class="modal-card budget-modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="budgetModalSiteTitle">Project Budget & Client Payments Manager</h3>
+          <p style="font-size:0.82rem; color:#64748b; margin-top:2px;" id="budgetModalSiteSubtitle">Configure Contract Budget and Record Client Advances (Cash, Online, Cheque)</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeBudgetModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 4-Box Summary Dashboard -->
+        <div class="budget-modal-summary">
+          <div class="budget-summary-box">
+            <span>Total Contract</span>
+            <strong id="bmTotalContract">Rs. 0.00</strong>
+          </div>
+          <div class="budget-summary-box" style="border-left: 3px solid #10b981;">
+            <span>Advance Received</span>
+            <strong id="bmAdvanceReceived" style="color:#059669;">Rs. 0.00</strong>
+          </div>
+          <div class="budget-summary-box" style="border-left: 3px solid #ef4444;">
+            <span>Total Spent</span>
+            <strong id="bmTotalSpent" style="color:#dc2626;">Rs. 0.00</strong>
+          </div>
+          <div class="budget-summary-box" style="border-left: 3px solid #3b82f6;">
+            <span>Remaining Advance</span>
+            <strong id="bmRemainingAdvance" style="color:#2563eb;">Rs. 0.00</strong>
+          </div>
+        </div>
+
+        <!-- Payment Mode Received Breakdown Badges -->
+        <div style="font-size:0.8rem; font-weight:700; color:#475569; margin-bottom:4px;">CLIENT ADVANCE RECEIVED BY PAYMENT MODE:</div>
+        <div class="payment-mode-pill-row" id="bmPaymentPillsRow">
+          <span class="pay-mode-pill cash" id="bmPillCash">Cash: Rs. 0.00</span>
+          <span class="pay-mode-pill online" id="bmPillOnline">Online Payment: Rs. 0.00</span>
+          <span class="pay-mode-pill cheque" id="bmPillCheque">Cheque: Rs. 0.00</span>
+        </div>
+
+        <!-- Section 1: Record / Edit Client Payment Form -->
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:16px; margin-bottom:20px;">
+          <h4 style="font-size:0.95rem; color:#0f172a; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+            <span id="bmFormTitle">Record Client Payment / Advance</span>
+            <button type="button" class="btn-xs hidden" id="bmCancelEditBtn" style="background:#e2e8f0; color:#334155;">Cancel Edit</button>
+          </h4>
+          <form id="recordPaymentForm">
+            <input type="hidden" id="bmPaymentId" value="">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="bmPayAmount">Payment Amount (INR) <span class="required">*</span></label>
+                <input type="text" inputmode="decimal" id="bmPayAmount" required placeholder="e.g. 200000" class="cost-input bold-cell">
+              </div>
+              <div class="form-group">
+                <label for="bmPayMode">Payment Mode <span class="required">*</span></label>
+                <select id="bmPayMode" class="site-dropdown" required>
+                  <option value="Online Payment">Online Payment (UPI / NetBanking / NEFT / GPay)</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="bmPayDate">Payment Date <span class="required">*</span></label>
+                <input type="date" id="bmPayDate" required>
+              </div>
+              <div class="form-group">
+                <label for="bmPayNotes">Cheque No. / Transaction Ref / Notes</label>
+                <input type="text" id="bmPayNotes" placeholder="e.g. Cheque #492019 SBI or UPI Ref #9402194">
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+              <button type="submit" class="btn btn-primary btn-sm" id="bmSavePaymentBtn">
+                Record Payment
+              </button>
+            </div>
+          </form>
+          <div id="bmPaymentAlert" class="alert-box hidden" style="margin-top:10px;"></div>
+        </div>
+
+        <!-- Section 2: Payments History List Table -->
+        <div style="margin-bottom:20px;">
+          <h4 style="font-size:0.95rem; color:#0f172a; margin-bottom:10px;">Client Payments Received History</h4>
+          <div style="max-height:220px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px;">
+            <table class="payments-table">
+              <thead>
+                <tr>
+                  <th>Payment ID</th>
+                  <th>Date</th>
+                  <th>Payment Mode</th>
+                  <th>Reference / Notes</th>
+                  <th style="text-align:right;">Amount (INR)</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bmPaymentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 3: Edit Total Contract Amount Form -->
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <strong style="font-size:0.9rem; color:#1e293b;">Total Contract Budget Amount</strong>
+            <p style="font-size:0.78rem; color:#64748b;">Total sanctioned project contract value.</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="text" inputmode="decimal" id="bmEditContractAmount" class="cost-input bold-cell" style="max-width:180px;" placeholder="Contract Amount">
+            <button type="button" class="btn btn-primary btn-sm" id="bmSaveContractBtn">Update Contract</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="doneBudgetModalBtn">Done & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTO TAKING MODAL -->
+  <div id="photoModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Site Photo Capture & Upload</h3>
+        <button type="button" class="modal-close-btn" id="closePhotoModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tabs">
+          <button type="button" class="modal-tab-btn active" id="modalCameraTabBtn">Live Camera</button>
+          <button type="button" class="modal-tab-btn" id="modalUploadTabBtn">Upload File</button>
+        </div>
+
+        <div id="modalCameraView">
+          <div class="camera-box">
+            <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas" style="display:none;"></canvas>
+            <div class="camera-grid-overlay"><div class="camera-reticle"></div></div>
+            <div class="camera-watermark" id="cameraWatermark">
+              BuildTrack Pro &bull; <span id="cameraWatermarkTime"></span>
+            </div>
+          </div>
+
+          <div class="camera-controls-bar">
+            <button type="button" class="camera-aux-btn" id="flipCameraBtn">Switch Camera</button>
+            <button type="button" class="shutter-btn" id="snapPhotoBtn" title="Take Photo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+            <button type="button" class="camera-aux-btn" id="toggleCameraStreamBtn">Pause Camera</button>
+          </div>
+        </div>
+
+        <div id="modalUploadView" class="hidden">
+          <label class="upload-dropzone" for="modalFileInput">
+            <div class="dropzone-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <strong>Click to Choose or Drag & Drop Site Photo</strong>
+            <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">Supports JPG, PNG, WebP (or tap to open mobile camera)</p>
+            <input type="file" id="modalFileInput" accept="image/*" capture="environment" style="display:none;">
+          </label>
+        </div>
+
+        <div id="modalPreviewView" class="hidden">
+          <div class="modal-preview-box">
+            <img src="" id="modalPreviewImg" alt="Captured Site Photo">
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:#64748b; margin-top:8px;">
+            <span>Verified High Definition Site Photo</span>
+            <button type="button" class="btn-link" id="retakePhotoBtn">Retake / Change</button>
+          </div>
+        </div>
+
+        <div id="photoModalAlert" class="alert-box hidden"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelPhotoModalBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="useCapturedPhotoBtn" disabled>
+          Use This Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL-SCREEN PHOTO VIEWER LIGHTBOX MODAL -->
+  <div id="photoViewerModal" class="lightbox-modal hidden">
+    <div class="lightbox-content">
+      <button type="button" class="lightbox-close-btn" id="closePhotoViewerBtn" title="Close Viewer">&times;</button>
+      <img src="" id="photoViewerImg" class="lightbox-img" alt="Full Resolution Site Photo">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:12px; flex-wrap:wrap; gap:8px;">
+        <div class="lightbox-caption" id="photoViewerCaption" style="margin-top:0;">Verified Site Photo</div>
+        <a id="photoViewerDownloadBtn" href="" download="Site_Photo.jpg" class="btn-xs" style="background:rgba(255,255,255,0.25); color:#fff; text-decoration:none; padding:6px 14px; border-radius:6px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+          ⬇️ Download Photo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORK TYPE SUGGESTIONS DATALIST -->
+  <datalist id="workTypeSuggestions">
+    <option value="Masonry and Brickwork">
+    <option value="RCC and Steel Fixing">
+    <option value="Plastering Work">
+    <option value="Plumbing and Drainage">
+    <option value="Electrical Work">
+    <option value="Flooring and Tiling">
+    <option value="Painting and Putty">
+    <option value="Carpentry and Woodwork">
+    <option value="Excavation and Earthwork">
+    <option value="Site Cleaning and Curing">
+    <option value="False Ceiling and POP">
+    <option value="Waterproofing Work">
+    <option value="Fabrication and Welding">
+    <option value="HVAC and Ducting">
+  </datalist>
+
+  <!-- MATERIAL SUGGESTIONS DATALIST -->
+  <datalist id="materialSuggestions">
+    <option value="Portland Cement (Grade 53)">
+    <option value="TMT Steel Rods (12mm)">
+    <option value="River Sand (M-Sand)">
+    <option value="Red Bricks / AAC Blocks">
+    <option value="20mm Aggregate Stone">
+    <option value="PVC Conduit and Drainage Pipes">
+    <option value="Electrical Copper Wire">
+    <option value="Vitrified Floor Tiles">
+    <option value="Interior Emulsion Paint">
+    <option value="Teak Wood Door Frame">
+  </datalist>
+
+  <!-- UNIT SUGGESTIONS DATALIST -->
+  <datalist id="unitSuggestions">
+    <option value="Bags">
+    <option value="Tons">
+    <option value="Kg">
+    <option value="Trips">
+    <option value="Trucks">
+    <option value="Pieces (Pcs)">
+    <option value="Liters">
+    <option value="Sq. Ft.">
+    <option value="Sq. Meter">
+    <option value="Cubic Meter (Cu.M)">
+    <option value="Cubic Feet (CFT)">
+    <option value="Brass">
+    <option value="Bundles">
+    <option value="Boxes">
+    <option value="Rolls">
+    <option value="Meters">
+    <option value="Feet">
+    <option value="Units">
+  </datalist>
+
+  <script src="app.js?v=15"></script>
+</body>
+</html>

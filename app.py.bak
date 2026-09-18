@@ -1,0 +1,182 @@
+import os
+import json
+import socket
+import threading
+import time
+import sqlite3
+import webbrowser
+import base64
+from flask import Flask, request, jsonify, send_file, send_from_directory, redirect
+from flask_cors import CORS
+import excel_manager
+from excel_manager import (
+    init_excel,
+    add_entry as add_record,
+    get_all_records,
+    delete_record,
+    delete_site_data,
+    get_next_id,
+    sync_project_sheets,
+    EXCEL_FILE
+)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static") if os.path.isdir(os.path.join(BASE_DIR, "static")) else BASE_DIR
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+PROJECTS_FILE = os.path.join(BASE_DIR, "projects.json")
+USERS_FILE = os.path.join(BASE_DIR, "users.json")
+PROJECTS_BACKUP_FILE = os.path.join(BASE_DIR, "projects_backup.json")
+USERS_BACKUP_FILE = os.path.join(BASE_DIR, "users_backup.json")
+DELETED_USERS_FILE = os.path.join(BASE_DIR, "deleted_users.json")
+DELETED_PROJECTS_FILE = os.path.join(BASE_DIR, "deleted_projects.json")
+DB_FILE = os.path.join(BASE_DIR, "buildtrack.db")
+
+USERS_LOCK = threading.Lock()
+PROJECTS_LOCK = threading.Lock()
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS company_users (
+            email TEXT PRIMARY KEY,
+            name TEXT,
+            role TEXT,
+            password TEXT,
+            status TEXT,
+            last_active TEXT,
+            created_at TEXT
+        )
+    ''')
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS deleted_company_users (
+            email TEXT PRIMARY KEY,
+            deleted_at TEXT
+        )
+    ''')
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS company_projects (
+            site_id TEXT PRIMARY KEY,
+            site_name TEXT,
+            location TEXT,
+            client_name TEXT,
+            client_email TEXT,
+            engineer_email TEXT,
+            engineer_name TEXT,
+            total_contract_amount REAL,
+            advance_received REAL,
+            payments_json TEXT,
+            status TEXT,
+            created_at TEXT
+        )
+    ''')
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS deleted_company_projects (
+            site_id TEXT PRIMARY KEY,
+            deleted_at TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Project Tombstone Helpers
+def get_deleted_project_ids():
+    deleted = set()
+    try:
+        conn = get_db_connection()
+        rows = conn.execute("SELECT site_id FROM deleted_company_projects").fetchall()
+        for r in rows:
+            deleted.add(r["site_id"].strip().upper())
+        conn.close()
+    except Exception as e:
+        print("DB read deleted projects error:", e)
+
+    if os.path.exists(DELETED_PROJECTS_FILE):
+        try:
+            with open(DELETED_PROJECTS_FILE, "r", encoding="utf-8") as f:
+                d_list = json.load(f)
+                if isinstance(d_list, list):
+                    for sid in d_list:
+                        deleted.add(str(sid).strip().upper())
+        except Exception:
+            pass
+    return deleted
+
+def mark_project_deleted(site_id):
+    sid = str(site_id).strip().upper()
+    if not sid:
+        return
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT OR REPLACE INTO deleted_company_projects (site_id, deleted_at) VALUES (?, ?)", (sid, time.strftime("%Y-%m-%d %H:%M:%S")))
+        cur.execute("DELETE FROM company_projects WHERE upper(site_id) = ?", (sid,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("DB mark project deleted error:", e)
+
+    try:
+        del_set = get_deleted_project_ids()
+        del_set.add(sid)
+        atomic_save_json(DELETED_PROJECTS_FILE, sorted(list(del_set)))
+    except Exception:
+        pass
+
+def unmark_project_deleted(site_id):
+    sid = str(site_id).strip().upper()
+    if not sid:
+        return
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM deleted_company_projects WHERE upper(site_id) = ?", (sid,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("DB unmark project deleted error:", e)
+
+    try:
+        del_set = get_deleted_project_ids()
+        if sid in del_set:
+            del_set.remove(sid)
+            atomic_save_json(DELETED_PROJECTS_FILE, sorted(list(del_set)))
+    except Exception:
+        pass
+
+# Project Endpoints with Permanent Deletion
+@app.route("/api/projects/<site_id>", methods=["GET", "PUT", "DELETE"])
+def single_project(site_id):
+    site_id = site_id.strip().upper()
+    projects = load_projects()
+
+    if request.method == "DELETE":
+        # 1. Permanently tombstone in SQLite & JSON
+        mark_project_deleted(site_id)
+        target_k = None
+        for k in projects:
+            if k.strip().upper() == site_id:
+                target_k = k
+                break
+        if target_k:
+            del projects[target_k]
+        save_projects(projects)
+
+        # 2. Clean Excel worksheet and cached report
+        try:
+            excel_manager.delete_site_data(site_id)
+        except Exception as e:
+            print(f"Error cleaning Excel for site {site_id}:", e)
+
+        return jsonify({"success": True, "message": f"Site {site_id} deleted permanently."})

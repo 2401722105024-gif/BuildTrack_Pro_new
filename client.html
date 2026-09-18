@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BuildTrack Pro | Verified Client Progress Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=6">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="bg-fixed-container" id="bgContainer" style="background-image: url('b5cadbbf-51f8-4bbf-8957-e85e531bb420.jpg');">
+    <div class="bg-overlay"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- TOP HEADER -->
+    <header class="top-nav">
+      <div class="brand-section">
+        <div>
+          <h1 class="brand-title">BuildTrack Pro</h1>
+          <p class="brand-subtitle" id="clientHeaderSub">Verified Client Construction Progress & Procurement Report</p>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <div class="user-role-badge" style="border-color: rgba(52, 211, 153, 0.4); background: rgba(16, 185, 129, 0.18); color: #34d399;">
+          <span class="pulse-dot" style="background-color: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          <span id="clientSiteBadge">Verified Client Report</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">
+          Print / Save PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- PROJECT INFO CARD -->
+    <div style="background:#ffffff; border-radius:var(--radius-md); padding:16px 20px; border:1px solid var(--border-light); box-shadow:0 2px 8px rgba(0,0,0,0.05); margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="site-code-badge" id="clientSiteIdBadge">SITE-101</span>
+          <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary);" id="clientProjectTitle">Villa Grand Residency - Phase 1</h2>
+        </div>
+        <p style="font-size:0.84rem; color:#64748b; margin-top:3px;" id="clientLocationText">
+          Location: North Sector Road, Plot #42 &bull; Client: <strong id="clientOwnerName">Mr. Sharma & Family</strong>
+        </p>
+      </div>
+      <div style="font-size:0.84rem; background:#f0fdf4; padding:8px 14px; border-radius:6px; border:1px solid #bbf7d0; color:#166534;">
+        <span>Assigned Site Engineer: <strong id="clientEngineerText">Sam (Site Engineer)</strong></span>
+      </div>
+    </div>
+
+    <!-- FINANCIAL RIBBON -->
+    <div class="financial-ribbon">
+      <div class="financial-card highlight-kpi">
+        <span class="kpi-label">Total Project Contract Value</span>
+        <h3 class="kpi-value" id="clientTotalProjectAmount">Rs. 15,00,000</h3>
+        <span class="kpi-sub">Total Agreement Value</span>
+      </div>
+      <div class="financial-card advance-kpi">
+        <span class="kpi-label">Client Advance Given</span>
+        <h3 class="kpi-value" id="clientAdvanceReceived">Rs. 6,00,000</h3>
+        <span class="kpi-sub">Deposited to Builder</span>
+      </div>
+      <div class="financial-card spent-kpi">
+        <span class="kpi-label">Total Site Spend Incurred</span>
+        <h3 class="kpi-value" id="clientTotalExpense">Rs. 0</h3>
+        <span class="kpi-sub" id="clientEntriesCount">0 Work Logs</span>
+      </div>
+      <div class="financial-card balance-kpi">
+        <span class="kpi-label">Remaining Advance Balance</span>
+        <h3 class="kpi-value" id="clientRemainingAdvance">Rs. 0</h3>
+        <span class="kpi-sub" id="clientRemainingProjectBalance">Overall Contract Balance: Rs. 0</span>
+      </div>
+    </div>
+
+    <!-- ADVANCE USAGE PROGRESS BAR -->
+    <div class="budget-bar-container">
+      <div class="budget-bar-header">
+        <span><strong>Advance Utilization:</strong> <span id="clientAdvanceUsageText">0% of advance used</span></span>
+        <span><strong>Overall Contract Progress:</strong> <span id="clientProjectUsageText">0% of contract</span></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="clientAdvanceProgressBar" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- KPIS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <span class="kpi-label">Material Spend</span>
+          <h3 class="kpi-value" id="clientMaterialCost">Rs. 0</h3>
+          <span class="kpi-sub" id="clientMaterialPercent">0% of total spend</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <span class="kpi-label">Labour Wages Paid</span>
+          <h3 class="kpi-value" id="clientLabourCost">Rs. 0</h3>
+          <span class="kpi-sub" id="clientLabourPercent">0% of total spend</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <span class="kpi-label">Manpower Deployed</span>
+          <h3 class="kpi-value" id="clientTotalWorkers">0</h3>
+          <span class="kpi-sub">Total Worker Shifts</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <span class="kpi-label">Work Categories</span>
+          <h3 class="kpi-value" id="clientCategoriesCount">0</h3>
+          <span class="kpi-sub">Active Execution Phases</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Material Procurement Breakdown</h3>
+          <span class="chart-tag">Verified Invoices</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="clientMaterialChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Work Category Spending</h3>
+          <span class="chart-tag">Cost Distribution</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="clientCategoryChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Labour Wages by Trade</h3>
+          <span class="chart-tag">Payroll Verification</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="clientLabourChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Daily Expenditure Timeline</h3>
+          <span class="chart-tag">Chronological</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="clientTimelineChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERIFIED EXECUTION & PHOTO PROOF FEED -->
+    <div class="feed-card" style="margin-top: 24px;">
+      <div class="feed-header">
+        <div>
+          <h2>Verified Daily Work Logs & Photo Proofs</h2>
+          <p class="feed-desc">Timestamped site photos and verified daily logs from your assigned Site Engineer.</p>
+        </div>
+      </div>
+      <div class="feed-list" id="clientFeedList">
+        <p style="color: var(--text-muted); padding: 16px;">Loading verified site entries...</p>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <p>BuildTrack Pro Verified Client Portal &copy; 2026</p>
+    </footer>
+  </div>
+
+  <!-- FULL RESOLUTION PHOTO LIGHTBOX -->
+  <div id="photoViewerModal" class="lightbox-modal hidden">
+    <div class="lightbox-content">
+      <button type="button" class="lightbox-close-btn" id="closePhotoViewerBtn">&times;</button>
+      <img src="" id="photoViewerImg" class="lightbox-img" alt="Verified Site Photo">
+      <div class="lightbox-caption" id="photoViewerCaption">Verified Site Photo Proof</div>
+    </div>
+  </div>
+
+  <script src="client.js?v=6"></script>
+</body>
+</html>
